@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>波長與顏色轉換</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: linear-gradient(180deg, #ff8a80, #ff80ab, #b388ff, #80d8ff, #a7ffeb, #ccff90);
+      background-size: 400% 400%;
+      animation: gradient 10s ease infinite;
+    }
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    h1 {
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      margin-top: 20px;
+      font-size: 2.5rem;
+    }
+
+    .slider-container {
+      text-align: center;
+      margin-top: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .spectrum {
+      width: 100%;
+      height: 20px;
+      background: linear-gradient(to right, rgb(97,0,97), blue, cyan, green, yellow, orange, rgb(161,0,0));
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: #ddd;
+      outline: none;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #4caf50;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border: none;
+      border-radius: 50%;
+      background: #4caf50;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 8px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .color-box {
+      margin-top: 20px;
+      width: 100%;
+      height: 120px;
+      border: 1px solid #ddd;
+      text-align: center;
+      line-height: 120px;
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .details {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .details p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>波長與顏色轉換</h1>
+  <div class="slider-container">
+    <div class="spectrum"></div>
+    <label for="wavelengthSlider">調整波長（380–750 nm）：</label>
+    <input type="range" id="wavelengthSlider" min="380" max="750" value="550">
+    <p>
+      當前波長：<input type="number" id="wavelengthInput" min="380" max="750" value="550"> nm
+    </p>
+  </div>
+  <div class="color-box" id="colorBox">顏色預覽</div>
+  <div class="details">
+    <p>RGB 值：<span id="rgbValue">rgb(0, 255, 0)</span></p>
+    <p>HEX 值：<span id="hexValue">#00ff00</span></p>
+    <p>XYZ 值：<span id="xyzValue">xyz(0, 0, 0)</span></p>
+    <p>HSL 值：<span id="hslValue">hsl(0, 0%, 0%)</span></p>
+  </div>
+
+  <script>
+    const wavelengthSlider = document.getElementById('wavelengthSlider');
+    const wavelengthInput = document.getElementById('wavelengthInput');
+    const colorBox = document.getElementById('colorBox');
+    const rgbValue = document.getElementById('rgbValue');
+    const hexValue = document.getElementById('hexValue');
+    const xyzValue = document.getElementById('xyzValue');
+    const hslValue = document.getElementById('hslValue');
+
+    function wavelengthToSpectralColor(wavelength) {
+      const Gamma = 0.8; 
+      const IntensityMax = 255;
+      let factor, red, green, blue;
+
+      if (wavelength >= 380 && wavelength < 440) {
+        red = -(wavelength - 440) / (440 - 380);
+        green = 0.0;
+        blue = 1.0;
+      } else if (wavelength >= 440 && wavelength < 490) {
+        red = 0.0;
+        green = (wavelength - 440) / (490 - 440);
+        blue = 1.0;
+      } else if (wavelength >= 490 && wavelength < 510) {
+        red = 0.0;
+        green = 1.0;
+        blue = -(wavelength - 510) / (510 - 490);
+      } else if (wavelength >= 510 && wavelength < 580) {
+        red = (wavelength - 510) / (580 - 510);
+        green = 1.0;
+        blue = 0.0;
+      } else if (wavelength >= 580 && wavelength < 645) {
+        red = 1.0;
+        green = -(wavelength - 645) / (645 - 580);
+        blue = 0.0;
+      } else if (wavelength >= 645 && wavelength <= 750) {
+        red = 1.0;
+        green = 0.0;
+        blue = 0.0;
+      } else {
+        red = 0.0;
+        green = 0.0;
+        blue = 0.0;
+      }
+
+      if (wavelength >= 380 && wavelength < 420) {
+        factor = 0.3 + 0.7 * (wavelength - 380) / (420 - 380);
+      } else if (wavelength >= 420 && wavelength <= 700) {
+        factor = 1.0;
+      } else if (wavelength > 700 && wavelength <= 750) {
+        factor = 0.3 + 0.7 * (750 - wavelength) / (750 - 700);
+      } else {
+        factor = 0.0;
+      }
+
+      red = Math.pow(red * factor, Gamma);
+      green = Math.pow(green * factor, Gamma);
+      blue = Math.pow(blue * factor, Gamma);
+
+      return {
+        r: Math.round(red * IntensityMax),
+        g: Math.round(green * IntensityMax),
+        b: Math.round(blue * IntensityMax)
+      };
+    }
+
+    function rgbToHex(r, g, b) {
+      const toHex = (n) => n.toString(16).padStart(2, '0');
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+
+        h /= 6;
+      }
+
+      return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+      };
+    }
+
+    function calculateXYZ(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+
+      r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+      g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+      b = b > 0.04045 ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+
+      const x = 0.4124 * r + 0.3576 * g + 0.1805 * b;
+      const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
+
+      return `xyz(${x.toFixed(4)}, ${y.toFixed(4)}, ${z.toFixed(4)})`;
+    }
+
+    function updateWavelength(wavelength) {
+      const color = wavelengthToSpectralColor(wavelength);
+      const rgb = `rgb(${color.r}, ${color.g}, ${color.b})`;
+      const hex = rgbToHex(color.r, color.g, color.b);
+      const hsl = rgbToHsl(color.r, color.g, color.b);
+      const xyz = calculateXYZ(color.r, color.g, color.b);
+
+      colorBox.style.backgroundColor = rgb;
+      colorBox.textContent = `${wavelength} nm`;
+      colorBox.style.color = `rgb(${255 - color.r}, ${255 - color.g}, ${255 - color.b})`; // 動態補色
+      rgbValue.textContent = rgb;
+      hexValue.textContent = hex;
+      hslValue.textContent = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+      xyzValue.textContent = xyz;
+    }
+
+    wavelengthSlider.addEventListener('input', () => {
+      const wavelength = parseInt(wavelengthSlider.value);
+      wavelengthInput.value = wavelength;
+      updateWavelength(wavelength);
+    });
+
+    wavelengthInput.addEventListener('input', () => {
+      let wavelength = parseInt(wavelengthInput.value);
+      if (isNaN(wavelength) || wavelength < 380 || wavelength > 750) {
+        wavelength = 550;
+      }
+      wavelengthSlider.value = wavelength;
+      updateWavelength(wavelength);
+    });
+
+    wavelengthSlider.dispatchEvent(new Event('input'));
+  </script>
+</body>
+</html>
